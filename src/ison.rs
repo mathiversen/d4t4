@@ -17,11 +17,11 @@ pub struct Context {
     location: Vec<String>,
 }
 
-pub struct Myson {
+pub struct Ison {
     value: Value,
 }
 
-impl Myson {
+impl Ison {
     pub fn parse(input: &str) -> Result<Self> {
         let mut ctx = Context::default();
 

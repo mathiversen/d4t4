@@ -1,6 +1,6 @@
 use indoc::indoc;
 use insta::assert_json_snapshot;
-use myson_parser::{Myson, Result};
+use ison_parser::{Ison, Result};
 
 #[test]
 fn it_can_parse_object() -> Result<()> {
@@ -15,7 +15,7 @@ fn it_can_parse_object() -> Result<()> {
             "tree": "${values.r}px"
         }"#
     );
-    Myson::parse(markup)?;
+    Ison::parse(markup)?;
     Ok(())
 }
 
@@ -28,6 +28,6 @@ fn it_can_parse_array() -> Result<()> {
             }
         ]"#
     );
-    Myson::parse(markup)?;
+    Ison::parse(markup)?;
     Ok(())
 }

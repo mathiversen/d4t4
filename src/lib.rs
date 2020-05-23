@@ -1,7 +1,7 @@
-mod myson;
+mod ison;
 mod parser;
 
 use parser::Rule;
 
-pub use crate::myson::Myson;
+pub use crate::ison::Ison;
 pub use anyhow::Result;
