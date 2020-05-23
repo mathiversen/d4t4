@@ -17,12 +17,12 @@ pub struct Context {
     location: Vec<String>,
 }
 
-pub struct Ison {
+pub struct Sdf {
     value: Value,
 }
 
-impl Ison {
-    pub fn parse(input: &str) -> Result<Self> {
+impl Sdf {
+    pub fn parse(input: &str) -> Result<Value> {
         let mut ctx = Context::default();
 
         let root = Pest::parse(Rule::json, input)?.next().unwrap();
@@ -33,17 +33,35 @@ impl Ison {
             _ => unreachable!("json can only be ofe type array or object"),
         };
 
-        Self::get_reference_values(&json, &mut ctx)?;
+        Self::get_reference_values(&mut json, &mut ctx)?;
+        Self::set_reference_value(&mut json, &ctx)?;
 
-        Ok(Self { value: json })
+        Ok(json)
     }
 
     fn get_reference_values(json: &Value, ctx: &mut Context) -> Result<()> {
         for (key, references) in ctx.references.iter_mut() {
             for reference in references.iter_mut() {
-                let path = reference.name.clone();
-                let value = Self::get_object_value(json, &path)?;
+                let value = Self::get_object_value(json, &reference.name)?;
                 reference.value = Some(value);
+            }
+        }
+        Ok(())
+    }
+
+    fn set_reference_value(json: &mut Value, ctx: &Context) -> Result<()> {
+        for (key, references) in ctx.references.iter() {
+            for reference in references.iter() {
+                if let Some(prev) = json.get_mut(key) {
+                    let new_value = match *prev {
+                        Value::String(ref s) => Value::String(s.clone().replace(
+                            format!("${{{}}}", reference.name).as_str(),
+                            reference.value.as_ref().unwrap().as_str().unwrap(),
+                        )),
+                        _ => unreachable!("nej"),
+                    };
+                    *prev = new_value;
+                }
             }
         }
         Ok(())
@@ -51,7 +69,7 @@ impl Ison {
 
     fn get_object_value(json: &Value, path: &str) -> Result<Value> {
         let mut keys = path.split(".").collect::<Vec<_>>();
-        let x = json.get(format!("\"{}\"", &keys[0]).as_str()).unwrap();
+        let x = json.get(&keys[0]).unwrap();
         let value = match x {
             Value::Object(_) => {
                 keys.remove(0);
@@ -65,11 +83,12 @@ impl Ison {
     fn build_object(pairs: Pairs<Rule>, ctx: &mut Context) -> Result<Value> {
         let mut object = Map::new();
         for pair in pairs {
-            let mut combo = Vec::new();
+            let mut key_value_pair = Vec::new();
             for (index, key_value) in pair.into_inner().enumerate() {
                 let value = match index {
                     0 => {
-                        let key = key_value.as_str().to_string();
+                        let mut key = key_value.as_str().to_string();
+                        key = key.replace("\"", "");
                         ctx.location.push(key.clone());
                         Value::String(key)
                     }
@@ -83,11 +102,11 @@ impl Ison {
                     },
                     _ => unreachable!("pair should only be two"),
                 };
-                combo.push(value);
+                key_value_pair.push(value);
             }
             object.insert(
-                combo[0].clone().as_str().unwrap().to_string(),
-                combo[1].clone(),
+                key_value_pair[0].clone().as_str().unwrap().to_string(),
+                key_value_pair[1].clone(),
             );
             ctx.location.pop();
         }

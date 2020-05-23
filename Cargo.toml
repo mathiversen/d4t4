@@ -1,10 +1,8 @@
 [package]
-name = "ison_parser"
+name = "sdf_parser"
 version = "0.1.0"
 authors = ["Mathias Iversen <work@mathiasiversen.com>"]
 edition = "2018"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 insta = "0.16"

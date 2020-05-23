@@ -1,8 +1,0 @@
-{
-    "values": {
-        "r": 10,
-        "g": 10,
-        "b": 100
-    },
-    "two": "rgba(#values.r, #values.g, #values.g, 0.1)"
-}
