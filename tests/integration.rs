@@ -1,6 +1,6 @@
 use indoc::indoc;
 use insta::assert_json_snapshot;
-use zen_parser::{Result, Zen};
+use myson_parser::{Myson, Result};
 
 #[test]
 fn it_can_parse_object() -> Result<()> {
@@ -11,10 +11,11 @@ fn it_can_parse_object() -> Result<()> {
                 "g": 10,
                 "b": 100
             },
-            "two": "rgba(#values.r, #values.g, #values.g, 0.1)"
+            "two": "rgba(${values.r}, ${values.g}, ${values.b}, 0.1)",
+            "tree": "${values.r}px"
         }"#
     );
-    Zen::parse(markup)?;
+    Myson::parse(markup)?;
     Ok(())
 }
 
@@ -27,6 +28,6 @@ fn it_can_parse_array() -> Result<()> {
             }
         ]"#
     );
-    Zen::parse(markup)?;
+    Myson::parse(markup)?;
     Ok(())
 }

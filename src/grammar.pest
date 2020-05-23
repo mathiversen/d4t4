@@ -1,3 +1,5 @@
+// Org. source: https://github.com/pest-parser/pest/blob/master/grammars/src/grammars/json.pest
+
 json = _{ SOI ~ (object | array) ~ EOI }
 
 object = { "{" ~ pair ~ ("," ~ pair)* ~ "}" | "{" ~ "}" }
@@ -7,10 +9,12 @@ array = { "[" ~ value ~ ("," ~ value)* ~ "]" | "[" ~ "]" }
 
 value = _{ string | number | object | array | bool | null }
 
-string  = @{ "\"" ~ inner ~ "\"" }
-inner   = @{ (!("\"" | "\\") ~ ANY)* ~ (escape ~ inner)? }
-escape  = @{ "\\" ~ ("\"" | "\\" | "/" | "b" | "f" | "n" | "r" | "t" | unicode) }
-unicode = @{ "u" ~ ASCII_HEX_DIGIT{4} }
+string  = { "\"" ~ inner ~ "\"" }
+
+inner   = _{ (!"\"" ~ (reference_wrapper | text))* }
+reference_wrapper = _{ "${" ~ reference ~ "}" }
+reference = { (!"}" ~ ANY)* }
+text = { (!("${" | "\"") ~ ANY)* }
 
 number = @{ "-"? ~ int ~ ("." ~ ASCII_DIGIT+ ~ exp? | exp)? }
 int    = @{ "0" | ASCII_NONZERO_DIGIT ~ ASCII_DIGIT* }

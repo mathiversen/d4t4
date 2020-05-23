@@ -1,5 +1,5 @@
 [package]
-name = "zen_parser"
+name = "myson_parser"
 version = "0.1.0"
 authors = ["Mathias Iversen <work@mathiasiversen.com>"]
 edition = "2018"
@@ -7,11 +7,12 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-insta = "0.16.0"
-indoc = "0.3.5"
-anyhow = "1.0.31"
-pest = "2.1.3"
-pest_derive = "2.1.0"
-serde = "1.0.110"
-serde_json = "1.0.53"
-serde_derive = "1.0.110"
+insta = "0.16"
+indoc = "0.3"
+anyhow = "1.0"
+pest = "2.1"
+pest_derive = "2.1"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+serde_derive = "1.0"
+regex = "1.3.7"
