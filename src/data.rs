@@ -86,9 +86,7 @@ impl Data {
                 let value = match index {
                     0 => {
                         let mut key = key_value.as_str().to_string();
-                        if key.starts_with("\"") {
-                            key = key.replace("\"", "");
-                        }
+                        Self::replace_quote_symbol(&mut key);
                         ctx.location.push(key.clone());
                         Value::String(key)
                     }
@@ -132,10 +130,18 @@ impl Data {
                 string.push_str(pair.as_str());
             }
         }
-        if string.starts_with("\"") {
-            string = string.replace("\"", "");
-        }
+        Self::replace_quote_symbol(&mut string);
         Ok(Value::String(string))
+    }
+
+    fn replace_quote_symbol(string: &mut String) {
+        if string.starts_with("\"") {
+            *string = string.replace("\"", "");
+        } else if string.starts_with("\'") {
+            *string = string.replace("\'", "");
+        } else if string.starts_with("`") {
+            *string = string.replace("`", "");
+        }
     }
 
     fn build_array(pairs: Pairs<Rule>) -> Result<Value> {
