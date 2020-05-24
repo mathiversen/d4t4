@@ -40,3 +40,16 @@ fn it_can_parse_backticks_quotes() -> Result<()> {
     assert_json_snapshot!(x);
     Ok(())
 }
+
+#[test]
+fn it_can_parse_mixed_quotations() -> Result<()> {
+    let markup = indoc!(
+        r#"{
+            "name": 'Mr. Anderson',
+            "greeting": `We meet again ${name}`,
+        }"#
+    );
+    let x = Data::parse(markup)?;
+    assert_json_snapshot!(x);
+    Ok(())
+}
