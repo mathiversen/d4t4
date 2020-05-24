@@ -1,5 +1,25 @@
-# Name?
+# Data parser, a JSON-superset and data format
 
-- Smart data format (SDF)
-- Intelligent data format (IDF)
-- Json Superset Format (JSF)
+## Data specification
+
+JSON Compatible
+
+```
+    {
+        "format": "data",
+        "name": "data parser"
+    }
+```
+
+Super capabilities
+
+```
+    {
+        'format': 'data',
+        'name': '${format} parser',
+    }
+```
+
+- Supports cross-data referencing (higher data integrity)
+- Supports mutiple quotation formats: double, single, backticks
+- Supports dangling commas (easier to create datafiles)
