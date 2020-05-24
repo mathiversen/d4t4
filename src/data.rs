@@ -23,34 +23,34 @@ impl Data {
     pub fn parse(input: &str) -> Result<Value> {
         let mut ctx = Context::default();
 
-        let root = Pest::parse(Rule::json, input)?.next().unwrap();
+        let root = Pest::parse(Rule::data, input)?.next().unwrap();
 
-        let mut json = match root.as_rule() {
+        let mut data = match root.as_rule() {
             Rule::object => Self::build_object(root.into_inner(), &mut ctx)?,
             Rule::array => Self::build_array(root.into_inner())?,
-            _ => unreachable!("json can only be ofe type array or object"),
+            _ => unreachable!("data can only be of type array or object"),
         };
 
-        Self::get_reference_values(&mut json, &mut ctx)?;
-        Self::set_reference_value(&mut json, &ctx)?;
+        Self::get_reference_values(&mut data, &mut ctx)?;
+        Self::set_reference_value(&mut data, &ctx)?;
 
-        Ok(json)
+        Ok(data)
     }
 
-    fn get_reference_values(json: &Value, ctx: &mut Context) -> Result<()> {
+    fn get_reference_values(data: &Value, ctx: &mut Context) -> Result<()> {
         for (key, references) in ctx.references.iter_mut() {
             for reference in references.iter_mut() {
-                let value = Self::get_object_value(json, &reference.name)?;
+                let value = Self::get_object_value(data, &reference.name)?;
                 reference.value = Some(value);
             }
         }
         Ok(())
     }
 
-    fn set_reference_value(json: &mut Value, ctx: &Context) -> Result<()> {
+    fn set_reference_value(data: &mut Value, ctx: &Context) -> Result<()> {
         for (key, references) in ctx.references.iter() {
             for reference in references.iter() {
-                if let Some(prev) = json.get_mut(key) {
+                if let Some(prev) = data.get_mut(key) {
                     let new_value = match *prev {
                         Value::String(ref s) => Value::String(s.clone().replace(
                             format!("${{{}}}", reference.name).as_str(),
@@ -65,9 +65,9 @@ impl Data {
         Ok(())
     }
 
-    fn get_object_value(json: &Value, path: &str) -> Result<Value> {
+    fn get_object_value(data: &Value, path: &str) -> Result<Value> {
         let mut keys = path.split(".").collect::<Vec<_>>();
-        let x = json.get(&keys[0]).unwrap();
+        let x = data.get(&keys[0])?;
         let value = match x {
             Value::Object(_) => {
                 keys.remove(0);

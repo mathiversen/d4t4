@@ -1,6 +1,6 @@
 // Org. source: https://github.com/pest-parser/pest/blob/master/grammars/src/grammars/json.pest
 
-json = _{ SOI ~ (object | array) ~ EOI }
+data = _{ SOI ~ (object | array) ~ EOI }
 
 object = { "{" ~ pair ~ ("," ~ pair)* ~ ","? ~ "}" | "{" ~ "}" }
 pair   = { string ~ ":" ~ value }
