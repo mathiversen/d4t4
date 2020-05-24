@@ -17,11 +17,9 @@ pub struct Context {
     location: Vec<String>,
 }
 
-pub struct Sdf {
-    value: Value,
-}
+pub struct Data {}
 
-impl Sdf {
+impl Data {
     pub fn parse(input: &str) -> Result<Value> {
         let mut ctx = Context::default();
 
@@ -88,7 +86,9 @@ impl Sdf {
                 let value = match index {
                     0 => {
                         let mut key = key_value.as_str().to_string();
-                        key = key.replace("\"", "");
+                        if key.starts_with("\"") {
+                            key = key.replace("\"", "");
+                        }
                         ctx.location.push(key.clone());
                         Value::String(key)
                     }
@@ -131,6 +131,9 @@ impl Sdf {
             } else {
                 string.push_str(pair.as_str());
             }
+        }
+        if string.starts_with("\"") {
+            string = string.replace("\"", "");
         }
         Ok(Value::String(string))
     }

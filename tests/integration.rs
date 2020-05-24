@@ -1,6 +1,6 @@
+use data_parser::{Data, Result};
 use indoc::indoc;
 use insta::assert_json_snapshot;
-use sdf_parser::{Result, Sdf};
 
 #[test]
 fn it_can_parse_object() -> Result<()> {
@@ -15,7 +15,7 @@ fn it_can_parse_object() -> Result<()> {
             "tree": "${values.r}px"
         }"#
     );
-    let x = Sdf::parse(markup)?;
+    let x = Data::parse(markup)?;
     assert_json_snapshot!(x);
     Ok(())
 }
@@ -29,6 +29,6 @@ fn it_can_parse_array() -> Result<()> {
             }
         ]"#
     );
-    Sdf::parse(markup)?;
+    Data::parse(markup)?;
     Ok(())
 }

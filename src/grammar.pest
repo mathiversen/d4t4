@@ -9,12 +9,12 @@ array = { "[" ~ value ~ ("," ~ value)* ~ "]" | "[" ~ "]" }
 
 value = _{ string | number | object | array | bool | null }
 
-string  = { "\"" ~ inner ~ "\"" }
+string  = { PUSH(quote) ~ inner ~ POP }
 
-inner   = _{ (!"\"" ~ (reference_wrapper | text))* }
+inner   = _{ (!PEEK ~ (reference_wrapper | text))* }
 reference_wrapper = _{ "${" ~ reference ~ "}" }
 reference = { (!"}" ~ ANY)* }
-text = { (!("${" | "\"") ~ ANY)* }
+text = { (!("${" | PEEK) ~ ANY)* }
 
 number = @{ "-"? ~ int ~ ("." ~ ASCII_DIGIT+ ~ exp? | exp)? }
 int    = @{ "0" | ASCII_NONZERO_DIGIT ~ ASCII_DIGIT* }
@@ -24,4 +24,5 @@ bool = { "true" | "false" }
 
 null = { "null" }
 
+quote = @{ "\"" | "'" | "`"}
 WHITESPACE = _{ " " | "\t" | "\r" | "\n" }

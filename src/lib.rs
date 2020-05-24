@@ -1,7 +1,7 @@
+mod data;
 mod parser;
-mod sdf;
 
 use parser::Rule;
 
-pub use crate::sdf::Sdf;
+pub use crate::data::Data;
 pub use anyhow::Result;
