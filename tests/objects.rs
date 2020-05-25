@@ -19,16 +19,3 @@ fn it_can_parse_object() -> Result<()> {
     assert_json_snapshot!(x);
     Ok(())
 }
-
-#[test]
-fn it_can_parse_array() -> Result<()> {
-    let markup = indoc!(
-        r#"[
-            {
-                "key": "value"
-            }
-        ]"#
-    );
-    Data::parse(markup)?;
-    Ok(())
-}

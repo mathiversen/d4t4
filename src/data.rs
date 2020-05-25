@@ -1,7 +1,7 @@
 use crate::error::Error;
 use crate::parser::{Pest, Rule};
 use anyhow::Result;
-use pest::{iterators::Pairs, Parser as PestParser};
+use pest::{iterators::Pair, iterators::Pairs, Parser as PestParser};
 use serde_json::{json, map::Map, value::Value};
 use std::collections::HashMap;
 use std::default::Default;
@@ -29,8 +29,8 @@ impl Data {
             .expect("failed to parse the file");
 
         let mut data = match root.as_rule() {
-            Rule::object => Self::parse_value_object(root.into_inner(), &mut ctx)?,
-            Rule::array => Self::parse_value_array(root.into_inner())?,
+            Rule::object => Self::parse_object(root.into_inner(), &mut ctx)?,
+            Rule::array => Self::parse_array(root.into_inner(), &mut ctx)?,
             _ => unreachable!("data can only be of type array or object"),
         };
 
@@ -76,24 +76,40 @@ impl Data {
         Ok(())
     }
 
-    fn get_object_value(data: &Value, path: &str) -> Result<Value> {
-        let mut keys = path.split(".").collect::<Vec<_>>();
-        let x = data.get(&keys[0]).expect("no value was found in path");
-        let value = match x {
-            Value::Object(_) => {
-                keys.remove(0);
-                Self::get_object_value(&x, keys.join(".").as_str())?
-            }
-            _ => x.clone(),
-        };
-        Ok(value)
+    fn parse_value(pair: Pair<Rule>, ctx: &mut Context) -> Result<Value> {
+        match pair.as_rule() {
+            Rule::null => Ok(Value::Null),
+            Rule::bool => Self::parse_bool(pair.as_str()),
+            Rule::number => Self::parse_number(pair.as_str()),
+            Rule::string => Self::parse_string(pair.into_inner(), ctx),
+            Rule::object => Self::parse_object(pair.into_inner(), ctx),
+            Rule::array => Self::parse_array(pair.into_inner(), ctx),
+            _ => unreachable!("unknown json value"),
+        }
     }
 
-    fn parse_value_object(pairs: Pairs<Rule>, ctx: &mut Context) -> Result<Value> {
+    fn parse_bool(value: &str) -> Result<Value> {
+        Ok(json!(value.parse::<bool>()?))
+    }
+
+    fn parse_number(value: &str) -> Result<Value> {
+        Ok(json!(value.parse::<f64>()?))
+    }
+
+    fn parse_array(pairs: Pairs<Rule>, ctx: &mut Context) -> Result<Value> {
+        let mut array = Vec::new();
+        for pair in pairs {
+            let value = Self::parse_value(pair, ctx)?;
+            array.push(value);
+        }
+        Ok(Value::Array(array))
+    }
+
+    fn parse_object(pairs: Pairs<Rule>, ctx: &mut Context) -> Result<Value> {
         let mut object = Map::new();
         for pair in pairs {
+            // TODO: Improve this key value logic
             let mut key_value_pair = Vec::new();
-            // TODO: There must be a better way to handle key value pairs than a loop
             for (index, key_value) in pair.into_inner().enumerate() {
                 dbg!(&key_value);
                 let value = match index {
@@ -103,15 +119,7 @@ impl Data {
                         ctx.location.push(key.clone());
                         Value::String(key)
                     }
-                    1 => match key_value.as_rule() {
-                        Rule::null => Value::Null,
-                        Rule::bool => Self::parse_value_bool(key_value.as_str())?,
-                        Rule::number => Self::parse_value_number(key_value.as_str())?,
-                        Rule::string => Self::parse_value_text(key_value.into_inner(), ctx)?,
-                        Rule::object => Self::parse_value_object(key_value.into_inner(), ctx)?,
-                        Rule::array => Self::parse_value_array(key_value.into_inner())?,
-                        _ => unreachable!("unknown json value"),
-                    },
+                    1 => Self::parse_value(key_value, ctx)?,
                     _ => unreachable!("pair should only be two"),
                 };
                 key_value_pair.push(value);
@@ -129,15 +137,20 @@ impl Data {
         Ok(Value::Object(object))
     }
 
-    fn parse_value_bool(value: &str) -> Result<Value> {
-        Ok(json!(value.parse::<bool>()?))
+    fn get_object_value(data: &Value, path: &str) -> Result<Value> {
+        let mut keys = path.split(".").collect::<Vec<_>>();
+        let x = data.get(&keys[0]).expect("no value was found in path");
+        let value = match x {
+            Value::Object(_) => {
+                keys.remove(0);
+                Self::get_object_value(&x, keys.join(".").as_str())?
+            }
+            _ => x.clone(),
+        };
+        Ok(value)
     }
 
-    fn parse_value_number(value: &str) -> Result<Value> {
-        Ok(json!(value.parse::<f64>()?))
-    }
-
-    fn parse_value_text(pairs: Pairs<Rule>, ctx: &mut Context) -> Result<Value> {
+    fn parse_string(pairs: Pairs<Rule>, ctx: &mut Context) -> Result<Value> {
         let mut string = String::new();
         let current_location = ctx.location.clone().join(".");
 
@@ -171,11 +184,5 @@ impl Data {
 
     fn replace_double_escape(string: &mut String) {
         *string = string.replace(r"\\", r"\")
-    }
-
-    fn parse_value_array(pairs: Pairs<Rule>) -> Result<Value> {
-        let array = Vec::new();
-        dbg!(&pairs);
-        Ok(Value::Array(array))
     }
 }

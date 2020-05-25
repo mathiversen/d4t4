@@ -1,6 +1,12 @@
 use data_parser::{Data, Result};
 use indoc::indoc;
 use insta::assert_json_snapshot;
+use serde_json::Value;
+use std::fs::File;
+use std::io;
+use std::io::prelude::*;
+
+const JSON_FILE: &'static str = "tests/data.json";
 
 // https://github.com/pest-parser/pest/blob/master/grammars/tests/examples.json
 #[test]
@@ -22,4 +28,18 @@ fn it_can_parse_json() -> Result<()> {
     let x = Data::parse(markup)?;
     assert_json_snapshot!(x);
     Ok(())
+}
+
+#[test]
+fn it_can_parse_j() -> Result<()> {
+    let json = parse_json_with_serde(JSON_FILE)?;
+    assert_json_snapshot!(json);
+    Ok(())
+}
+
+fn parse_json_with_serde(path: &str) -> Result<Value> {
+    let mut f = File::open(JSON_FILE)?;
+    let mut data = String::new();
+    f.read_to_string(&mut data)?;
+    Ok(serde_json::from_str(&data)?)
 }
