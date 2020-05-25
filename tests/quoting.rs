@@ -53,3 +53,79 @@ fn it_can_parse_mixed_quotations() -> Result<()> {
     assert_json_snapshot!(x);
     Ok(())
 }
+
+#[test]
+fn it_can_parse_double_inside_single_quotes() -> Result<()> {
+    let markup = indoc!(
+        r#"{
+            'name': 'Mr. Anderson',
+            'greeting': 'We "meet" again ${name}',
+        }"#
+    );
+    let x = Data::parse(markup)?;
+    assert_json_snapshot!(x);
+    Ok(())
+}
+
+#[test]
+fn it_can_parse_backticks_inside_single_quotes() -> Result<()> {
+    let markup = indoc!(
+        r#"{
+            'name': 'Mr. Anderson',
+            'greeting': 'We `meet` again ${name}',
+        }"#
+    );
+    let x = Data::parse(markup)?;
+    assert_json_snapshot!(x);
+    Ok(())
+}
+
+#[test]
+fn it_can_parse_single_inside_double_quotes() -> Result<()> {
+    let markup = indoc!(
+        r#"{
+            "name": "Mr. Anderson",
+            "greeting": "We 'meet' again ${name}",
+        }"#
+    );
+    let x = Data::parse(markup)?;
+    assert_json_snapshot!(x);
+    Ok(())
+}
+
+#[test]
+fn it_can_parse_backticks_inside_double_quotes() -> Result<()> {
+    let markup = indoc!(
+        r#"{
+            "name": "Mr. Anderson",
+            "greeting": "We `meet` again ${name}",
+        }"#
+    );
+    let x = Data::parse(markup)?;
+    assert_json_snapshot!(x);
+    Ok(())
+}
+#[test]
+fn it_can_parse_single_inside_backticks_quotes() -> Result<()> {
+    let markup = indoc!(
+        r#"{
+            `name`: `Mr. Anderson`,
+            `greeting`: `We 'meet' again ${name}`,
+        }"#
+    );
+    let x = Data::parse(markup)?;
+    assert_json_snapshot!(x);
+    Ok(())
+}
+#[test]
+fn it_can_parse_double_inside_backticks_quotes() -> Result<()> {
+    let markup = indoc!(
+        r#"{
+            `name`: `Mr. Anderson`,
+            `greeting`: `We "meet" again ${name}`,
+        }"#
+    );
+    let x = Data::parse(markup)?;
+    assert_json_snapshot!(x);
+    Ok(())
+}
