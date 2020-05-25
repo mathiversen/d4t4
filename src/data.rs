@@ -78,7 +78,7 @@ fn parse_value(pair: Pair<Rule>, ctx: &mut Context) -> Result<Value> {
         Rule::null => Ok(Value::Null),
         Rule::bool => parse_bool(pair.as_str()),
         Rule::number => parse_number(pair.as_str()),
-        Rule::string => parse_string(pair.into_inner(), ctx),
+        Rule::string => parse_string(pair, ctx),
         Rule::object => parse_object(pair.into_inner(), ctx),
         Rule::array => parse_array(pair.into_inner(), ctx),
         _ => unreachable!("unknown json value"),
@@ -108,7 +108,6 @@ fn parse_object(pairs: Pairs<Rule>, ctx: &mut Context) -> Result<Value> {
         // TODO: Improve this key value logic
         let mut key_value_pair = Vec::new();
         for (index, key_value) in pair.into_inner().enumerate() {
-            dbg!(&key_value);
             let value = match index {
                 0 => {
                     let mut key = key_value.as_str().to_string();
@@ -147,11 +146,25 @@ fn get_object_value(data: &Value, path: &str) -> Result<Value> {
     Ok(value)
 }
 
-fn parse_string(pairs: Pairs<Rule>, ctx: &mut Context) -> Result<Value> {
+fn parse_string(pair: Pair<Rule>, ctx: &mut Context) -> Result<Value> {
+    if pair.clone().into_inner().next().is_none() {
+        parse_text(pair)
+    } else {
+        parse_referance(pair, ctx)
+    }
+}
+
+fn parse_text(pair: Pair<Rule>) -> Result<Value> {
+    let mut string = pair.as_str().to_string();
+    replace_quote_symbol(&mut string);
+    replace_double_escape(&mut string);
+    Ok(Value::String(string))
+}
+
+fn parse_referance(pair: Pair<Rule>, ctx: &mut Context) -> Result<Value> {
     let mut string = String::new();
     let current_location = ctx.location.clone().join(".");
-
-    for pair in pairs {
+    for pair in pair.into_inner() {
         if pair.as_rule() == Rule::reference {
             let entry = ctx
                 .references

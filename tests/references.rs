@@ -3,7 +3,7 @@ use indoc::indoc;
 use insta::assert_json_snapshot;
 
 #[test]
-fn it_can_parse_object() -> Result<()> {
+fn it_can_parse_reference() -> Result<()> {
     let markup = indoc!(
         r#"{
             "values": {
