@@ -7,14 +7,17 @@ pair   = { string ~ ":" ~ value }
 
 array = { "[" ~ value ~ ("," ~ value)* ~ ","? ~ "]" | "[" ~ "]" }
 
-value = _{ string | number | object | array | bool | null }
+value = _{ null | bool | number | string | object | array  }
 
 string  = { PUSH(quote) ~ inner ~ POP }
 
 inner   = _{ (!PEEK ~ (reference_wrapper | text))* }
 reference_wrapper = _{ "${" ~ reference ~ "}" }
 reference = @{ (!"}" ~ ANY)* }
-text = @{ (!("${" | PEEK) ~ ANY)* }
+
+text   = @{ (!("${" | PEEK | "\\") ~ ANY)* ~ (escape ~ text)? }
+escape  = @{ "\\" ~ ("\"" | "\\" | "/" | "b" | "f" | "n" | "r" | "t" | unicode) }
+unicode = @{ "u" ~ ASCII_HEX_DIGIT{4} }
 
 number = @{ "-"? ~ int ~ ("." ~ ASCII_DIGIT+ ~ exp? | exp)? }
 int    = @{ "0" | ASCII_NONZERO_DIGIT ~ ASCII_DIGIT* }
@@ -24,5 +27,5 @@ bool = { "true" | "false" }
 
 null = { "null" }
 
-quote = _{ "\"" | "'" | "`"}
+quote = _{ "\"" | "'" }
 WHITESPACE = _{ " " | "\t" | "\r" | "\n" }

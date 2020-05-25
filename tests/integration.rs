@@ -7,9 +7,9 @@ fn it_can_parse_object() -> Result<()> {
     let markup = indoc!(
         r#"{
             "values": {
-                "r": 10,
-                "g": 10,
-                "b": 100
+                "r": "10",
+                "g": "10",
+                "b": "100"
             },
             "two": "rgba(${values.r}, ${values.g}, ${values.b}, 0.1)",
             "tree": "${values.r}px"
