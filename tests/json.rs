@@ -1,45 +1,35 @@
-use data_parser::{Data, Result};
-use indoc::indoc;
-use insta::assert_json_snapshot;
+use data_parser::{parse, Result};
 use serde_json::Value;
 use std::fs::File;
-use std::io;
 use std::io::prelude::*;
 
-const JSON_FILE: &'static str = "tests/data.json";
+const JSON_COMPLETE: &'static str = "tests/data_complete.json";
+const JSON_SIMPLE: &'static str = "tests/data_simple.json";
 
 // https://github.com/pest-parser/pest/blob/master/grammars/tests/examples.json
+
 #[test]
-fn it_can_parse_json() -> Result<()> {
-    let markup = indoc!(
-        r#"  {
-            "null": null,
-            "true": true,
-            "false": false,
-            "":  23456789012E66,
-            "e": 0.123456789e-12,
-            "E": 1.234567890E+34,
-            "integer": 1234567890,
-            "one": 1,
-            "real": -9876.543210,
-            "zero": 0,
-        }"#
-    );
-    let x = Data::parse(markup)?;
-    assert_json_snapshot!(x);
+fn it_can_parse_simple_json() -> Result<()> {
+    let data = read_file_to_string(JSON_SIMPLE)?;
+    let v: Value = serde_json::from_str(&data)?;
+    let x = parse(&data)?;
+    assert_eq!(v, x);
     Ok(())
 }
 
+#[ignore]
 #[test]
 fn it_can_parse_j() -> Result<()> {
-    let json = parse_json_with_serde(JSON_FILE)?;
-    assert_json_snapshot!(json);
+    let data = read_file_to_string(JSON_COMPLETE)?;
+    let v: Value = serde_json::from_str(&data)?;
+    let x = parse(&data)?;
+    assert_eq!(v, x);
     Ok(())
 }
 
-fn parse_json_with_serde(path: &str) -> Result<Value> {
-    let mut f = File::open(JSON_FILE)?;
+fn read_file_to_string(path: &'static str) -> Result<String> {
+    let mut f = File::open(path)?;
     let mut data = String::new();
     f.read_to_string(&mut data)?;
-    Ok(serde_json::from_str(&data)?)
+    Ok(data)
 }

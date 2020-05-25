@@ -1,4 +1,4 @@
-use data_parser::{Data, Result};
+use data_parser::{parse, Result};
 use indoc::indoc;
 use insta::assert_json_snapshot;
 
@@ -10,7 +10,7 @@ fn it_can_parse_double_quotes() -> Result<()> {
             "greeting": "We meet again ${name}",
         }"#
     );
-    let x = Data::parse(markup)?;
+    let x = parse(markup)?;
     assert_json_snapshot!(x);
     Ok(())
 }
@@ -23,7 +23,7 @@ fn it_can_parse_single_quotes() -> Result<()> {
             'greeting': 'We meet again ${name}',
         }"#
     );
-    let x = Data::parse(markup)?;
+    let x = parse(markup)?;
     assert_json_snapshot!(x);
     Ok(())
 }
@@ -36,7 +36,7 @@ fn it_can_parse_mixed_quotations() -> Result<()> {
             "greeting": 'We "meet" again ${name}',
         }"#
     );
-    let x = Data::parse(markup)?;
+    let x = parse(markup)?;
     assert_json_snapshot!(x);
     Ok(())
 }
@@ -49,7 +49,7 @@ fn it_can_parse_double_inside_single_quotes() -> Result<()> {
             'greeting': 'We "meet" again ${name}',
         }"#
     );
-    let x = Data::parse(markup)?;
+    let x = parse(markup)?;
     assert_json_snapshot!(x);
     Ok(())
 }
@@ -62,7 +62,7 @@ fn it_can_parse_single_inside_double_quotes() -> Result<()> {
             "greeting": "We 'meet' again ${name}",
         }"#
     );
-    let x = Data::parse(markup)?;
+    let x = parse(markup)?;
     assert_json_snapshot!(x);
     Ok(())
 }

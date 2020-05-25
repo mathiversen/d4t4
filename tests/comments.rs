@@ -1,4 +1,4 @@
-use data_parser::{Data, Result};
+use data_parser::{parse, Result};
 use indoc::indoc;
 use insta::assert_json_snapshot;
 
@@ -16,7 +16,7 @@ fn it_can_parse_object_with_comments() -> Result<()> {
             "tree": "${values.r}px"
         }"##
     );
-    let x = Data::parse(markup)?;
+    let x = parse(markup)?;
     assert_json_snapshot!(x);
     Ok(())
 }
