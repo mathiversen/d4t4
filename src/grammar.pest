@@ -27,5 +27,7 @@ bool = { "true" | "false" }
 
 null = { "null" }
 
+COMMENT = _{ "#" ~ (!NEWLINE ~ ANY)* }
+
 quote = _{ "\"" | "'" }
 WHITESPACE = _{ " " | "\t" | "\r" | "\n" }
