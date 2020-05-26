@@ -66,3 +66,29 @@ fn it_can_parse_single_inside_double_quotes() -> Result<()> {
     assert_json_snapshot!(x);
     Ok(())
 }
+
+#[test]
+fn it_can_parse_double_with_escaped_double() -> Result<()> {
+    let markup = indoc!(
+        r#"{
+            "name": "Mr. Anderson",
+            "greeting": "We \"meet\" again ${name}",
+        }"#
+    );
+    let x = parse(markup)?;
+    assert_json_snapshot!(x);
+    Ok(())
+}
+
+#[test]
+fn it_can_parse_single_with_escaped_single() -> Result<()> {
+    let markup = indoc!(
+        r#"{
+            'name': 'Mr. Anderson',
+            'greeting': 'We \'meet\' again ${name}',
+        }"#
+    );
+    let x = parse(markup)?;
+    assert_json_snapshot!(x);
+    Ok(())
+}

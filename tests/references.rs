@@ -6,6 +6,19 @@ use insta::assert_json_snapshot;
 fn it_can_parse_reference() -> Result<()> {
     let markup = indoc!(
         r#"{
+            "value": "10px",
+            "border": "border-width: ${value}"
+        }"#
+    );
+    let x = parse(markup)?;
+    assert_json_snapshot!(x);
+    Ok(())
+}
+
+#[test]
+fn it_can_parse_multiple_references() -> Result<()> {
+    let markup = indoc!(
+        r#"{
             "values": {
                 "r": "10",
                 "g": "10",

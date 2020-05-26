@@ -1,8 +1,0 @@
----
-source: tests/quoting.rs
-expression: x
----
-{
-  "greeting": "We meet again Mr. Anderson",
-  "name": "Mr. Anderson"
-}

@@ -3,11 +3,6 @@ source: tests/references.rs
 expression: x
 ---
 {
-  "tree": "10px",
-  "two": "rgba(10, 10, 100, 0.1)",
-  "values": {
-    "b": "100",
-    "g": "10",
-    "r": "10"
-  }
+  "border": "border-width: 10px",
+  "value": "10px"
 }

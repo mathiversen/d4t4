@@ -1,5 +1,5 @@
 ---
-source: tests/integration.rs
+source: tests/references.rs
 expression: x
 ---
 {

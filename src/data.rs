@@ -1,3 +1,4 @@
+use crate::error::Error;
 use crate::parser::{Pest, Rule};
 use anyhow::Result;
 use pest::{iterators::Pair, iterators::Pairs, Parser as PestParser};
@@ -21,13 +22,13 @@ pub struct Context {
 pub fn parse(input: &str) -> Result<Value> {
     let mut ctx = Context::default();
 
-    let root = Pest::parse(Rule::data, input)?
+    let pair = Pest::parse(Rule::data, input)?
         .next()
         .expect("failed to parse the file");
 
-    let mut data = match root.as_rule() {
-        Rule::object => parse_object(root.into_inner(), &mut ctx)?,
-        Rule::array => parse_array(root.into_inner(), &mut ctx)?,
+    let mut data = match pair.as_rule() {
+        Rule::object => parse_object(pair.into_inner(), &mut ctx)?,
+        Rule::array => parse_array(pair.into_inner(), &mut ctx)?,
         _ => unreachable!("data can only be of type array or object"),
     };
 
@@ -111,7 +112,9 @@ fn parse_object(pairs: Pairs<Rule>, ctx: &mut Context) -> Result<Value> {
             let value = match index {
                 0 => {
                     let mut key = key_value.as_str().to_string();
-                    replace_quote_symbol(&mut key);
+                    // NOTE: keys should not have references,
+                    // otherwise we could have used parse_string
+                    remove_wrapping_quotes(&mut key);
                     ctx.location.push(key.clone());
                     Value::String(key)
                 }
@@ -147,51 +150,64 @@ fn get_object_value(data: &Value, path: &str) -> Result<Value> {
 }
 
 fn parse_string(pair: Pair<Rule>, ctx: &mut Context) -> Result<Value> {
-    if pair.clone().into_inner().next().is_none() {
-        parse_text(pair)
-    } else {
-        parse_referance(pair, ctx)
-    }
-}
-
-fn parse_text(pair: Pair<Rule>) -> Result<Value> {
     let mut string = pair.as_str().to_string();
-    replace_quote_symbol(&mut string);
-    replace_double_escape(&mut string);
-    Ok(Value::String(string))
-}
-
-fn parse_referance(pair: Pair<Rule>, ctx: &mut Context) -> Result<Value> {
-    let mut string = String::new();
-    let current_location = ctx.location.clone().join(".");
+    remove_wrapping_quotes(&mut string);
     for pair in pair.into_inner() {
-        if pair.as_rule() == Rule::reference {
-            let entry = ctx
-                .references
-                .entry(current_location.clone())
-                .or_insert(Vec::new());
-            entry.push(Reference {
-                name: pair.clone().as_str().to_string(),
-                value: None,
-            });
-            string.push_str(format!("${{{}}}", pair.as_str()).as_str());
-        } else {
-            string.push_str(pair.as_str());
+        match pair.as_rule() {
+            Rule::text => replace_escape_in_string_pair(pair, &mut string)?,
+            Rule::reference => add_reference_to_ctx(pair, ctx)?,
+            _ => unreachable!("strings can only have text or references"),
         }
     }
-    replace_quote_symbol(&mut string);
-    replace_double_escape(&mut string);
     Ok(Value::String(string))
 }
 
-fn replace_quote_symbol(string: &mut String) {
-    if string.starts_with("\"") {
-        *string = string.replace("\"", "");
-    } else if string.starts_with("\'") {
-        *string = string.replace("\'", "");
+fn replace_escape_in_string_pair(pair: Pair<Rule>, string: &mut String) -> Result<()> {
+    for pair in pair.into_inner() {
+        let new_value = match pair.as_rule() {
+            Rule::esc_slash => '/'.to_string(),
+            Rule::esc_backslash => '\\'.to_string(),
+            Rule::esc_carriage_return => '\r'.to_string(),
+            Rule::esc_tab => '\t'.to_string(),
+            Rule::esc_quote_double => '\"'.to_string(),
+            Rule::esc_quote_single => '\''.to_string(),
+            Rule::esc_backspace => '\u{8}'.to_string(),
+            Rule::esc_form_feed => '\u{c}'.to_string(),
+            Rule::esc_new_line => '\n'.to_string(),
+            Rule::esc_unicode => parse_unicode(pair.as_str())?,
+            _ => unimplemented!(),
+        };
+        *string = string.replacen(&pair.as_str(), &new_value, 1);
+    }
+    Ok(())
+}
+
+fn parse_unicode(string: &str) -> Result<String> {
+    let unicode = &string[2..];
+    if let Some(unicode) = u32::from_str_radix(unicode, 16)
+        .ok()
+        .and_then(std::char::from_u32)
+    {
+        Ok(unicode.to_string())
+    } else {
+        Err(Error::Parsing(format!("unknown unicode {}", unicode)).into())
     }
 }
 
-fn replace_double_escape(string: &mut String) {
-    *string = string.replace(r"\\", r"\")
+fn add_reference_to_ctx(pair: Pair<Rule>, ctx: &mut Context) -> Result<()> {
+    let current_location = ctx.location.clone().join(".");
+    let entry = ctx
+        .references
+        .entry(current_location.clone())
+        .or_insert(Vec::new());
+    entry.push(Reference {
+        name: pair.as_str().to_string(),
+        value: None,
+    });
+    Ok(())
+}
+
+fn remove_wrapping_quotes(string: &mut String) {
+    string.remove(0);
+    string.pop();
 }
