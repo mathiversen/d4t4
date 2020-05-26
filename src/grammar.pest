@@ -52,5 +52,5 @@ esc_unicode = @{ "\\u" ~ ASCII_HEX_DIGIT{4} }
 
 quote = _{ "\"" | "\'" }
 
-COMMENT = _{ "#" ~ (!NEWLINE ~ ANY)* }
+COMMENT = _{ "/*" ~ (!"*/" ~ ANY)* ~ "*/" }
 WHITESPACE = _{ " " | "\t" | "\r" | "\n" }

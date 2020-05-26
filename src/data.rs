@@ -79,7 +79,7 @@ fn parse_value(pair: Pair<Rule>, ctx: &mut Context) -> Result<Value> {
         Rule::null => Ok(Value::Null),
         Rule::bool => parse_bool(pair.as_str()),
         Rule::number => parse_number(pair.as_str()),
-        Rule::string => parse_string(pair, ctx),
+        Rule::string => parse_string(pair, ctx, true),
         Rule::object => parse_object(pair.into_inner(), ctx),
         Rule::array => parse_array(pair.into_inner(), ctx),
         _ => unreachable!("unknown json value"),
@@ -111,12 +111,9 @@ fn parse_object(pairs: Pairs<Rule>, ctx: &mut Context) -> Result<Value> {
         for (index, key_value) in pair.into_inner().enumerate() {
             let value = match index {
                 0 => {
-                    let mut key = key_value.as_str().to_string();
-                    // NOTE: keys should not have references,
-                    // otherwise we could have used parse_string
-                    remove_wrapping_quotes(&mut key);
-                    ctx.location.push(key.clone());
-                    Value::String(key)
+                    let key = parse_string(key_value, ctx, false)?;
+                    &ctx.location.push(key.clone().as_str().unwrap().to_string()); // TODO: Use str
+                    key
                 }
                 1 => parse_value(key_value, ctx)?,
                 _ => unreachable!("pair should only be two"),
@@ -149,13 +146,19 @@ fn get_object_value(data: &Value, path: &str) -> Result<Value> {
     Ok(value)
 }
 
-fn parse_string(pair: Pair<Rule>, ctx: &mut Context) -> Result<Value> {
+fn parse_string(pair: Pair<Rule>, ctx: &mut Context, extract_refs: bool) -> Result<Value> {
     let mut string = pair.as_str().to_string();
     remove_wrapping_quotes(&mut string);
     for pair in pair.into_inner() {
         match pair.as_rule() {
             Rule::text => replace_escape_in_string_pair(pair, &mut string)?,
-            Rule::reference => add_reference_to_ctx(pair, ctx)?,
+            Rule::reference => {
+                if extract_refs {
+                    add_reference_to_ctx(pair, ctx)?
+                } else {
+                    return Err(Error::Parsing("References are not allowed".to_string()).into());
+                }
+            }
             _ => unreachable!("strings can only have text or references"),
         }
     }
