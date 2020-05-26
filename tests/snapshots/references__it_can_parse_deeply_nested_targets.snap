@@ -1,0 +1,16 @@
+---
+source: tests/references.rs
+expression: x
+---
+{
+  "color": "rgba(0, 0, 0, 0.1)",
+  "value": {
+    "color": {
+      "black": {
+        "b": "0",
+        "g": "0",
+        "r": "0"
+      }
+    }
+  }
+}

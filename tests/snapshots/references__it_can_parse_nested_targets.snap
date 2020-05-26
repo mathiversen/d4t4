@@ -1,0 +1,12 @@
+---
+source: tests/references.rs
+expression: x
+---
+{
+  "color": "rgba(10, 10, 10, 0.1)",
+  "value": {
+    "b": "10",
+    "g": "10",
+    "r": "10"
+  }
+}

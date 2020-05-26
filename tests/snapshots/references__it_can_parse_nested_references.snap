@@ -1,0 +1,10 @@
+---
+source: tests/references.rs
+expression: x
+---
+{
+  "object": {
+    "width": "10px"
+  },
+  "value": "10"
+}

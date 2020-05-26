@@ -3,14 +3,15 @@ use crate::error::Error;
 use anyhow::Result;
 use pest::{iterators::Pair, iterators::Pairs, Parser as PestParser};
 use serde_json::{map::Map, value::Value};
-use std::collections::HashMap;
+use std::collections::{HashMap, VecDeque};
 use std::default::Default;
 use std::str::FromStr;
 
 #[derive(Debug)]
 pub struct Reference {
-    name: String,
+    target: String,
     value: Option<Value>,
+    location: String,
 }
 
 #[derive(Default, Debug)]
@@ -33,41 +34,63 @@ pub fn parse(input: &str) -> Result<Value> {
     };
 
     get_reference_values(&mut json, &mut ctx)?;
-    set_reference_value(&mut json, &ctx)?;
+    set_reference_values(&mut json, &ctx)?;
 
     Ok(json)
 }
 
 fn get_reference_values(data: &Value, ctx: &mut Context) -> Result<()> {
-    for (_key, references) in ctx.references.iter_mut() {
+    for (_target, references) in ctx.references.iter_mut() {
         for reference in references.iter_mut() {
-            let value = get_object_value(data, &reference.name)?;
+            let value = get_object_value(data, &reference.target)?;
             reference.value = Some(value);
         }
     }
     Ok(())
 }
 
-fn set_reference_value(data: &mut Value, ctx: &Context) -> Result<()> {
-    for (key, references) in ctx.references.iter() {
-        for reference in references.iter() {
-            // TODO: improve this logic
-            if let Some(prev) = data.get_mut(key) {
-                let new_value = match *prev {
-                    Value::String(ref s) => Value::String(
-                        s.clone().replace(
-                            format!("${{{}}}", reference.name).as_str(),
-                            reference
-                                .value
-                                .as_ref()
-                                .expect("failed to get reference.value")
-                                .as_str()
-                                .expect("failed to translate reference value to string"),
-                        ),
-                    ),
-                    _ => unreachable!("nej"), // TODO: references can only be string
+fn set_reference_values(data: &mut Value, ctx: &Context) -> Result<()> {
+    for (target, references) in ctx.references.iter() {
+        let mut path = target.split(".").collect::<VecDeque<_>>();
+        set_reference_value_at_target(data, &mut path, references)?;
+    }
+    Ok(())
+}
+
+fn set_reference_value_at_target(
+    data: &mut Value,
+    path: &mut VecDeque<&str>,
+    references: &Vec<Reference>,
+) -> Result<()> {
+    let key = path.pop_front();
+    if let Some(key) = key {
+        if let Some(data) = data.get_mut(key) {
+            set_reference_value_at_target(data, path, references)?;
+        } else {
+            return Err(Error::Parsing(format!("unknown reference key {}", key)).into());
+        }
+    } else {
+        for reference in references {
+            if let Some(value) = &reference.value {
+                match (&data, value) {
+                    (Value::String(x), Value::String(ref y)) => {
+                        let new_value = x
+                            .clone()
+                            .replace(format!("${{{}}}", &reference.target).as_str(), &y);
+                        *data = Value::String(new_value);
+                    }
+                    _ => {
+                        return Err(Error::Parsing(
+                            "only string references have been implemented".to_string(),
+                        )
+                        .into());
+                    }
                 };
-                *prev = new_value;
+            } else {
+                println!(
+                    "{}",
+                    format!("reference {} doesnt have a value", reference.target)
+                );
             }
         }
     }
@@ -156,10 +179,13 @@ fn parse_string(pair: Pair<Rule>, ctx: &mut Context, extract_refs: bool) -> Resu
                 if extract_refs {
                     add_reference_to_ctx(pair, ctx)?
                 } else {
-                    return Err(Error::Parsing("References are not allowed".to_string()).into());
+                    return Err(Error::Parsing(
+                        "References are not allowed inside of keys".to_string(),
+                    )
+                    .into());
                 }
             }
-            _ => unreachable!("strings can only have text or references"),
+            _ => unreachable!("strings can only consist of a text and/or a reference"),
         }
     }
     Ok(Value::String(string))
@@ -204,8 +230,9 @@ fn add_reference_to_ctx(pair: Pair<Rule>, ctx: &mut Context) -> Result<()> {
         .entry(current_location.clone())
         .or_insert(Vec::new());
     entry.push(Reference {
-        name: pair.as_str().to_string(),
+        target: pair.as_str().to_string(),
         value: None,
+        location: current_location,
     });
     Ok(())
 }
