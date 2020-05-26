@@ -3,18 +3,32 @@ use indoc::indoc;
 use insta::assert_json_snapshot;
 
 #[test]
-fn it_can_parse_object_with_comments() -> Result<()> {
+fn it_can_parse_object_with_comment() -> Result<()> {
     let markup = indoc!(
-        r#"{
-            /* This is a comment */
-            "values": {
-                "r": "10",
-                "g": "10",
-                "b": "100" /* This is a comment */
-            },
-            "two": "rgba(${values.r}, ${values.g}, ${values.b}, 0.1)",
-            "tree": "${values.r}px"
-        }"#
+        r#"[
+            {
+                /* This is a comment */
+                "values": "10"
+            }
+        ]"#
+    );
+    let x = parse(markup)?;
+    assert_json_snapshot!(x);
+    Ok(())
+}
+
+#[test]
+fn it_can_parse_object_with_multiline_comment() -> Result<()> {
+    let markup = indoc!(
+        r#"[
+            {
+                /*
+                    This is a comment that spans
+                    across multiple lines
+                */
+                "values": "10"
+            }
+        ]"#
     );
     let x = parse(markup)?;
     assert_json_snapshot!(x);

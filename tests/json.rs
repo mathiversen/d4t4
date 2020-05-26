@@ -5,7 +5,7 @@ use std::io::prelude::*;
 
 // https://github.com/pest-parser/pest/blob/master/grammars/tests/examples.json
 
-const JSON: &'static str = "tests/mocks/data.json";
+const JSON: &'static str = "tests/data/data.json";
 
 #[test]
 fn it_can_parse_json() -> Result<()> {
