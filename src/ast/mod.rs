@@ -1,5 +1,5 @@
 use pest_derive::Parser as PestMacro;
 
 #[derive(PestMacro)]
-#[grammar = "grammar.pest"]
-pub struct Pest;
+#[grammar = "ast/rules.pest"]
+pub struct Ast;

@@ -1,5 +1,5 @@
+use crate::ast::{Ast, Rule};
 use crate::error::Error;
-use crate::parser::{Pest, Rule};
 use anyhow::Result;
 use pest::{iterators::Pair, iterators::Pairs, Parser as PestParser};
 use serde_json::{map::Map, value::Value};
@@ -22,20 +22,20 @@ pub struct Context {
 pub fn parse(input: &str) -> Result<Value> {
     let mut ctx = Context::default();
 
-    let pair = Pest::parse(Rule::data, input)?
+    let ast = Ast::parse(Rule::ast, input)?
         .next()
         .expect("failed to parse the file");
 
-    let mut data = match pair.as_rule() {
-        Rule::object => parse_object(pair.into_inner(), &mut ctx)?,
-        Rule::array => parse_array(pair.into_inner(), &mut ctx)?,
-        _ => unreachable!("data can only be of type array or object"),
+    let mut json = match ast.as_rule() {
+        Rule::object => parse_object(ast.into_inner(), &mut ctx)?,
+        Rule::array => parse_array(ast.into_inner(), &mut ctx)?,
+        _ => unreachable!("json can only be of type array or object"),
     };
 
-    get_reference_values(&mut data, &mut ctx)?;
-    set_reference_value(&mut data, &ctx)?;
+    get_reference_values(&mut json, &mut ctx)?;
+    set_reference_value(&mut json, &ctx)?;
 
-    Ok(data)
+    Ok(json)
 }
 
 fn get_reference_values(data: &Value, ctx: &mut Context) -> Result<()> {
