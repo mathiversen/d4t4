@@ -1,0 +1,18 @@
+---
+source: tests/references.rs
+expression: x
+---
+{
+  "person": [
+    {
+      "name": "kalle"
+    },
+    {
+      "surname": "anka"
+    }
+  ],
+  "variables": {
+    "name": "kalle",
+    "surname": "anka"
+  }
+}

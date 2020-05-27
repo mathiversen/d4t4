@@ -101,6 +101,29 @@ fn it_can_parse_deeply_nested_targets() -> Result<()> {
 }
 
 #[test]
+fn it_can_reference_from_within_array() -> Result<()> {
+    let markup = indoc!(
+        r#"{
+            "variables": {
+                "name": "kalle",
+                "surname": "anka"
+            },
+            "person": [
+                {
+                    "name": "${variables.name}"
+                },
+                {
+                    "surname": "${variables.surname}"
+                }
+            ]
+        }"#
+    );
+    let x = parse(markup)?;
+    assert_json_snapshot!(x);
+    Ok(())
+}
+
+#[test]
 fn it_thows_error_when_reference_in_key() {
     let markup = indoc!(
         r#"{

@@ -52,7 +52,7 @@ fn get_reference_values(data: &Value, ctx: &mut Context) -> Result<()> {
 fn set_reference_values(data: &mut Value, ctx: &Context) -> Result<()> {
     for (target, references) in ctx.references.iter() {
         let mut path = target.split(".").collect::<VecDeque<_>>();
-        set_reference_value_at_target(data, &mut path, references)?;
+        set_reference_value_at_target(data, &mut path, references, true)?;
     }
     Ok(())
 }
@@ -61,13 +61,30 @@ fn set_reference_value_at_target(
     data: &mut Value,
     path: &mut VecDeque<&str>,
     references: &Vec<Reference>,
+    hard_error: bool,
 ) -> Result<()> {
     let key = path.pop_front();
     if let Some(key) = key {
-        if let Some(data) = data.get_mut(key) {
-            set_reference_value_at_target(data, path, references)?;
-        } else {
-            return Err(Error::Parsing(format!("unknown reference key {}", key)).into());
+        match data {
+            Value::Array(array) => {
+                for value in array {
+                    path.push_front(key);
+                    set_reference_value_at_target(value, path, references, false)?;
+                }
+            }
+            Value::Object(_) => {
+                if let Some(data) = data.get_mut(key) {
+                    set_reference_value_at_target(data, path, references, true)?;
+                } else {
+                    // TODO: This is to prevent errors when looping over multiple elements inside of an
+                    // array (logic above). We should probably improve this so that we index into the
+                    // array instead of looping over every element.
+                    if hard_error {
+                        return Err(Error::Parsing(format!("unknown reference key {}", key)).into());
+                    }
+                }
+            }
+            _ => unimplemented!("only objects can have references"),
         }
     } else {
         for reference in references {
