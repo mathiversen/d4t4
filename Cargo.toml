@@ -3,6 +3,11 @@ name = "data_parser"
 version = "0.1.0"
 authors = ["Mathias Iversen <work@mathiasiversen.com>"]
 edition = "2018"
+license = "MIT"
+description = "A modern, JSON compatible, data parser"
+keywords = ["data", "parser", "json"]
+categories = ["parsing"]
+readme = "README.md"
 
 [dependencies]
 anyhow = "1.0"
