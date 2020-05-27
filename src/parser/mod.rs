@@ -1,7 +1,7 @@
-use crate::ast::{Ast, Rule};
 use crate::error::Error;
+use crate::tokenizer::{Rule, Tokenizer};
 use anyhow::Result;
-use pest::{iterators::Pair, iterators::Pairs, Parser as PestParser};
+use pest::{iterators::Pair, iterators::Pairs, Parser};
 use serde_json::{map::Map, value::Value};
 use std::collections::{HashMap, VecDeque};
 use std::default::Default;
@@ -23,13 +23,13 @@ pub struct Context {
 pub fn parse(input: &str) -> Result<Value> {
     let mut ctx = Context::default();
 
-    let ast = Ast::parse(Rule::ast, input)?
+    let tokenizer = Tokenizer::parse(Rule::root, input)?
         .next()
         .expect("failed to parse the file");
 
-    let mut json = match ast.as_rule() {
-        Rule::object => parse_object(ast.into_inner(), &mut ctx)?,
-        Rule::array => parse_array(ast.into_inner(), &mut ctx)?,
+    let mut json = match tokenizer.as_rule() {
+        Rule::object => parse_object(tokenizer.into_inner(), &mut ctx)?,
+        Rule::array => parse_array(tokenizer.into_inner(), &mut ctx)?,
         _ => unreachable!("json can only be of type array or object"),
     };
 
