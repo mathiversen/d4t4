@@ -33,7 +33,7 @@ pub fn parse(input: &str) -> Result<Value> {
         _ => unreachable!("json can only be of type array or object"),
     };
 
-    get_reference_values(&mut json, &mut ctx)?;
+    get_reference_values(&json, &mut ctx)?;
     set_reference_values(&mut json, &ctx)?;
 
     Ok(json)
@@ -51,7 +51,7 @@ fn get_reference_values(data: &Value, ctx: &mut Context) -> Result<()> {
 
 fn set_reference_values(data: &mut Value, ctx: &Context) -> Result<()> {
     for (target, references) in ctx.references.iter() {
-        let mut path = target.split(".").collect::<VecDeque<_>>();
+        let mut path = target.split('.').collect::<VecDeque<_>>();
         set_reference_value_at_target(data, &mut path, references, true)?;
     }
     Ok(())
@@ -60,7 +60,7 @@ fn set_reference_values(data: &mut Value, ctx: &Context) -> Result<()> {
 fn set_reference_value_at_target(
     data: &mut Value,
     path: &mut VecDeque<&str>,
-    references: &Vec<Reference>,
+    references: &[Reference],
     hard_error: bool,
 ) -> Result<()> {
     let key = path.pop_front();
@@ -152,7 +152,7 @@ fn parse_object(pairs: Pairs<Rule>, ctx: &mut Context) -> Result<Value> {
             let value = match index {
                 0 => {
                     let key = parse_string(key_value, ctx, false)?;
-                    &ctx.location.push(key.clone().as_str().unwrap().to_string()); // TODO: Use str
+                    ctx.location.push(key.clone().as_str().unwrap().to_string()); // TODO: Use str
                     key
                 }
                 1 => parse_value(key_value, ctx)?,
@@ -174,7 +174,7 @@ fn parse_object(pairs: Pairs<Rule>, ctx: &mut Context) -> Result<Value> {
 }
 
 fn get_object_value(data: &Value, path: &str) -> Result<Value> {
-    let mut keys = path.split(".").collect::<Vec<_>>();
+    let mut keys = path.split('.').collect::<Vec<_>>();
     let x = data.get(&keys[0]).expect("no value was found in path");
     let value = match x {
         Value::Object(_) => {
@@ -245,7 +245,7 @@ fn add_reference_to_ctx(pair: Pair<Rule>, ctx: &mut Context) -> Result<()> {
     let entry = ctx
         .references
         .entry(current_location.clone())
-        .or_insert(Vec::new());
+        .or_insert_with(Vec::new);
     entry.push(Reference {
         target: pair.as_str().to_string(),
         value: None,
