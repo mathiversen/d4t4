@@ -160,14 +160,16 @@ fn parse_object(pairs: Pairs<Rule>, ctx: &mut Context) -> Result<Value> {
             };
             key_value_pair.push(value);
         }
-        object.insert(
-            key_value_pair[0]
-                .clone()
-                .as_str()
-                .expect("failed to translate value to str")
-                .to_string(),
-            key_value_pair[1].clone(),
-        );
+        let key = key_value_pair[0]
+            .clone()
+            .as_str()
+            .expect("failed to translate value to str")
+            .to_string();
+        if object.contains_key(&key) {
+            return Err(Error::Parsing(format!("Object already contains key: {}", key)).into());
+        } else {
+            object.insert(key, key_value_pair[1].clone());
+        }
         ctx.location.pop();
     }
     Ok(Value::Object(object))
@@ -188,8 +190,11 @@ fn get_object_value(data: &Value, path: &str) -> Result<Value> {
 
 fn parse_string(pair: Pair<Rule>, ctx: &mut Context, extract_refs: bool) -> Result<Value> {
     let mut string = pair.as_str().to_string();
-    remove_wrapping_quotes(&mut string);
+    if string.starts_with("\"") || string.starts_with("\'") {
+        remove_wrapping_quotes(&mut string);
+    }
     for pair in pair.into_inner() {
+        dbg!(&pair);
         match pair.as_rule() {
             Rule::text => replace_escape_in_string_pair(pair, &mut string)?,
             Rule::reference => {

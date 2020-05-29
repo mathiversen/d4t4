@@ -3,7 +3,12 @@
 root = _{ SOI ~ (object | array) ~ EOI }
 
 object = { "{" ~ pair ~ ("," ~ pair)* ~ ","? ~ "}" | "{" ~ "}" }
-pair   = { string ~ ":" ~ value }
+pair   = { key ~ ":" ~ value }
+
+key = _{ identifier | string }
+// TODO: Align with https://www.ecma-international.org/ecma-262/5.1/#sec-7.6
+// Do we want to use the same identifiers as ECMA?
+identifier = { (LETTER | ASCII_DIGIT | "$" | "_" ) ~ (LETTER | "_" | "-" | ASCII_DIGIT)* }
 
 array = { "[" ~ value ~ ("," ~ value)* ~ ","? ~ "]" | "[" ~ "]" }
 
