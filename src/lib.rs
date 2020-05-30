@@ -2,11 +2,11 @@
 //!
 //! [github]: https://img.shields.io/badge/github-8da0cb?style=for-the-badge&labelColor=555555&logo=github
 //!
-//! # D4t4 parser
+//! # D4t4
 //!
 //! **WIP - work in progress, use at your own risk**
 //!
-//! A parser for the JSON-superset called D4t4
+//! A JSON superset
 //!
 //! ## Features
 //! - JSON-compatible
@@ -18,7 +18,7 @@
 //!
 //! ## Example
 //! ```rust
-//!     use d4t4_parser::{parse};
+//!     use d4t4::parse;
 //!
 //!     fn main() {
 //!         let data = r#"{
@@ -48,7 +48,8 @@
 //!             ]
 //!         }"#;
 //!
-//!         assert_eq!(parse(data).ok().unwrap()["objects"][0]["padding"], "1px");
+//!         let json = parse(data).ok().unwrap();
+//!         assert_eq!(json["objects"][0]["padding"], "1px");
 //!     }
 //! ```
 //! ## Contributions

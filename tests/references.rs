@@ -1,4 +1,4 @@
-use d4t4_parser::{parse, Result};
+use d4t4::{parse, Result};
 use indoc::indoc;
 use insta::assert_json_snapshot;
 
