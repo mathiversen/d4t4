@@ -42,11 +42,39 @@ pub fn parse(input: &str) -> Result<Value> {
 fn get_reference_values(data: &Value, ctx: &mut Context) -> Result<()> {
     for (_target, references) in ctx.references.iter_mut() {
         for reference in references.iter_mut() {
-            let value = get_object_value(data, &reference.target)?;
+            let value = get_reference_value(data, &reference, &reference.target)?;
             reference.value = Some(value);
         }
     }
     Ok(())
+}
+
+fn get_reference_value(data: &Value, reference: &Reference, path: &str) -> Result<Value> {
+    let mut keys = path.split('.').collect::<Vec<_>>();
+    let first_key = keys.first().expect("should have a key");
+    if let Some(value) = data.get(&first_key) {
+        let value = match value {
+            Value::Object(_) => {
+                keys.remove(0);
+                get_reference_value(&value, reference, keys.join(".").as_str())?
+            }
+            Value::Array(_) => {
+                return Err(Error::Parsing(format!(
+                    "Referencing arrays are not supported, failed at key: {}",
+                    &first_key
+                ))
+                .into())
+            }
+            _ => value.clone(),
+        };
+        Ok(value)
+    } else {
+        Err(Error::Parsing(format!(
+            "No data was found in: {} at {}",
+            reference.target, first_key
+        ))
+        .into())
+    }
 }
 
 fn set_reference_values(data: &mut Value, ctx: &Context) -> Result<()> {
@@ -173,19 +201,6 @@ fn parse_object(pairs: Pairs<Rule>, ctx: &mut Context) -> Result<Value> {
         ctx.location.pop();
     }
     Ok(Value::Object(object))
-}
-
-fn get_object_value(data: &Value, path: &str) -> Result<Value> {
-    let mut keys = path.split('.').collect::<Vec<_>>();
-    let x = data.get(&keys[0]).expect("no value was found in path");
-    let value = match x {
-        Value::Object(_) => {
-            keys.remove(0);
-            get_object_value(&x, keys.join(".").as_str())?
-        }
-        _ => x.clone(),
-    };
-    Ok(value)
 }
 
 fn parse_string(pair: Pair<Rule>, ctx: &mut Context, extract_refs: bool) -> Result<Value> {
