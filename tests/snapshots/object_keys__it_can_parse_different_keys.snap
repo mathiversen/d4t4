@@ -3,12 +3,11 @@ source: tests/object_keys.rs
 expression: x
 ---
 {
-  "$name": "Mr. Birgersson",
   "0": "Mr. Karlsson",
   "1-name": "Mr. Eriksson",
   "2_name": "Mr. Fredriksson",
-  "_name": "Mr. Sunesson",
   "name-1": "Mr. Andersson",
   "name-3": "Mr. Davidsson",
+  "name-4": "Mr. Svensson",
   "name_2": "Mr. Johansson"
 }

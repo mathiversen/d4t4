@@ -8,7 +8,7 @@ pair   = { key ~ ":" ~ value }
 key = _{ identifier | string }
 // TODO: Align with https://www.ecma-international.org/ecma-262/5.1/#sec-7.6
 // Do we want to use the same identifiers as ECMA?
-identifier = { (LETTER | ASCII_DIGIT | "$" | "_" ) ~ (LETTER | "_" | "-" | ASCII_DIGIT)* }
+identifier = { (LETTER | ASCII_DIGIT ) ~ (LETTER | "_" | "-" | ASCII_DIGIT)* }
 
 array = { "[" ~ value ~ ("," ~ value)* ~ ","? ~ "]" | "[" ~ "]" }
 
@@ -25,10 +25,10 @@ exp    = @{ ("E" | "e") ~ ("+" | "-")? ~ ASCII_DIGIT+ }
 string  = { PUSH(quote) ~ inner_string ~ POP }
 
 inner_string   = _{ (!PEEK ~ (reference_wrapper | text))* }
-reference_wrapper = _{ "${" ~ reference ~ "}" }
+reference_wrapper = _{ "&{" ~ reference ~ "}" }
 reference = @{ (!"}" ~ ANY)* }
 
-text   = ${ (escape | (!("${" | PEEK | "\\") ~ ANY))* }
+text   = ${ (escape | (!("&{" | PEEK | "\\") ~ ANY))* }
 
 escape  = _{
     esc_backslash

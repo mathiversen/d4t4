@@ -7,7 +7,7 @@ fn it_can_parse_references_at_root() -> Result<()> {
     let markup = indoc!(
         r#"{
             "value": "10px",
-            "border": "border-width: ${value}"
+            "border": "border-width: &{value}"
         }"#
     );
     let x = parse(markup)?;
@@ -22,7 +22,7 @@ fn it_can_parse_multiple_references() -> Result<()> {
             "r": "10",
             "g": "10",
             "b": "100",
-            "color": "rgba(${r}, ${g}, ${b}, 0.1)"
+            "color": "rgba(&{r}, &{g}, &{b}, 0.1)"
         }"#
     );
     let x = parse(markup)?;
@@ -36,7 +36,7 @@ fn it_can_parse_nested_references() -> Result<()> {
         r#"{
             "value": "10",
             "object": {
-                "width": "${value}px"
+                "width": "&{value}px"
             }
         }"#
     );
@@ -52,7 +52,7 @@ fn it_can_parse_deeply_nested_references() -> Result<()> {
             "one": {
                 "two": {
                     "three": {
-                        "width": "${value}px"
+                        "width": "&{value}px"
                     }
                 }
             }
@@ -72,7 +72,7 @@ fn it_can_parse_nested_targets() -> Result<()> {
                 "g": "10",
                 "b": "10",
             },
-            "color": "rgba(${value.r}, ${value.g}, ${value.b}, 0.1)"
+            "color": "rgba(&{value.r}, &{value.g}, &{value.b}, 0.1)"
         }"#
     );
     let x = parse(markup)?;
@@ -92,7 +92,7 @@ fn it_can_parse_deeply_nested_targets() -> Result<()> {
                     }
                 }
             },
-            "color": "rgba(${value.color.black.r}, ${value.color.black.g}, ${value.color.black.b}, 0.1)"
+            "color": "rgba(&{value.color.black.r}, &{value.color.black.g}, &{value.color.black.b}, 0.1)"
         }"#
     );
     let x = parse(markup)?;
@@ -110,10 +110,10 @@ fn it_can_reference_from_within_array() -> Result<()> {
             },
             "person": [
                 {
-                    "name": "${variables.name}"
+                    "name": "&{variables.name}"
                 },
                 {
-                    "surname": "${variables.surname}"
+                    "surname": "&{variables.surname}"
                 }
             ]
         }"#
@@ -128,7 +128,7 @@ fn it_thows_error_when_reference_in_key() {
     let markup = indoc!(
         r#"{
             "value": "10px",
-            "key ${value}": "border-width: ${value}"
+            "key &{value}": "border-width: &{value}"
         }"#
     );
     assert!(parse(markup).is_err());

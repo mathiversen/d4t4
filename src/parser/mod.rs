@@ -93,7 +93,7 @@ fn set_reference_value_at_target(
                     (Value::String(x), Value::String(ref y)) => {
                         let new_value = x
                             .clone()
-                            .replace(format!("${{{}}}", &reference.target).as_str(), &y);
+                            .replace(format!("&{{{}}}", &reference.target).as_str(), &y);
                         *data = Value::String(new_value);
                     }
                     _ => {
