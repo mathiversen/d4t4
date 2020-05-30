@@ -1,4 +1,4 @@
-[![github]](https://github.com/mathiversen/d4t4-parser)
+[![github]](https://github.com/mathiversen/d4t4)
 
 [github]: https://img.shields.io/badge/github-8da0cb?style=for-the-badge&labelColor=555555&logo=github
 
@@ -24,10 +24,13 @@ A JSON superset
 
     fn main() {
         let data = r#"{
+            /*
+                Look how nice, we can separate re-useable data!
+            */
             padding: {
                 s: '1px',
                 m: '2px',
-                l: '3px',
+                l: '3px', /* note: triling comma */
             },
             color: {
                 red: '#fed7d7',

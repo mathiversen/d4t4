@@ -6,6 +6,7 @@ edition = "2018"
 license = "MIT"
 description = "A JSON superset"
 keywords = ["data", "d4t4", "parser", "json"]
+repository = "https://github.com/mathiversen/d4t4"
 categories = ["parsing"]
 readme = "README.md"
 
