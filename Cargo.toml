@@ -1,11 +1,11 @@
 [package]
-name = "data_parser"
+name = "d4t4_parser"
 version = "0.1.0"
 authors = ["Mathias Iversen <work@mathiasiversen.com>"]
 edition = "2018"
 license = "MIT"
-description = "A modern, JSON compatible, data parser"
-keywords = ["data", "parser", "json"]
+description = "A modern, JSON compatible, d4t4 parser"
+keywords = ["data", "d4t4", "parser", "json"]
 categories = ["parsing"]
 readme = "README.md"
 

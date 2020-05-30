@@ -194,7 +194,6 @@ fn parse_string(pair: Pair<Rule>, ctx: &mut Context, extract_refs: bool) -> Resu
         remove_wrapping_quotes(&mut string);
     }
     for pair in pair.into_inner() {
-        dbg!(&pair);
         match pair.as_rule() {
             Rule::text => replace_escape_in_string_pair(pair, &mut string)?,
             Rule::reference => {

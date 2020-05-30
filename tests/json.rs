@@ -1,4 +1,4 @@
-use data_parser::{parse, Result};
+use d4t4_parser::{parse, Result};
 use serde_json::Value;
 use std::fs::File;
 use std::io::prelude::*;
