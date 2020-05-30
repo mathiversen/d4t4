@@ -1,0 +1,9 @@
+---
+source: tests/comments.rs
+expression: x
+---
+[
+  {
+    "values": "10"
+  }
+]

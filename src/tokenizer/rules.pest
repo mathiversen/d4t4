@@ -57,5 +57,11 @@ esc_unicode = @{ "\\u" ~ ASCII_HEX_DIGIT{4} }
 
 quote = _{ "\"" | "\'" }
 
-COMMENT = _{ "/*" ~ (!"*/" ~ ANY)* ~ "*/" }
+COMMENT = _{
+    comment_block_style
+    | comment_line_style
+}
+comment_block_style = { "/*" ~ (!"*/" ~ ANY)* ~ "*/" }
+comment_line_style = { (!quote ~ "#" | "//") ~ (!(NEWLINE | quote) ~ ANY)* ~ NEWLINE }
+
 WHITESPACE = _{ " " | "\t" | "\r" | "\n" }

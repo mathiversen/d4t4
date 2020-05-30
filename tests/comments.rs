@@ -34,3 +34,33 @@ fn it_can_parse_object_with_multiline_comment() -> Result<()> {
     assert_json_snapshot!(x);
     Ok(())
 }
+
+#[test]
+fn it_can_parse_line_comment() -> Result<()> {
+    let markup = indoc!(
+        r#"[
+            {
+                // hash comment
+                "values": "10"
+            }
+        ]"#
+    );
+    let x = parse(markup)?;
+    assert_json_snapshot!(x);
+    Ok(())
+}
+
+#[test]
+fn it_can_parse_hash_comment() -> Result<()> {
+    let markup = indoc!(
+        r#"[
+            {
+                # hash comment
+                "values": "10"
+            }
+        ]"#
+    );
+    let x = parse(markup)?;
+    assert_json_snapshot!(x);
+    Ok(())
+}
