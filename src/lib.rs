@@ -1,4 +1,5 @@
 //! [![github]](https://github.com/mathiversen/d4t4)
+//!
 //! [github]: https://img.shields.io/badge/github-8da0cb?style=for-the-badge&labelColor=555555&logo=github
 //!
 //! # D4t4
